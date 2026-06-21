@@ -1,5 +1,5 @@
-"""
-IP-Chain (知产链) — FastAPI backend application.
+﻿"""
+IP-Chain (知识产权链) – FastAPI backend application.
 Blockchain-based intellectual property protection platform.
 """
 import os
@@ -12,12 +12,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from database import init_db, engine, Base
+from database import init_db
 from routes.auth import router as auth_router
 from routes.ip_assets import router as ip_assets_router
 from routes.marketplace import router as marketplace_router
-from routes.licenses import router as licenses_router
-from routes.payments import router as payments_router
 
 # Load .env before anything else
 env_path = Path(__file__).resolve().parent / ".env"
@@ -48,7 +46,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# ── CORS ───────────────────────────────────────────────────────────────────────
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=os.getenv(
@@ -60,17 +58,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Static file serving (uploaded files) ──────────────────────────────────────
+# Static file serving (uploaded files)
 UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "./uploads"))
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
-# ── Mount routers ──────────────────────────────────────────────────────────────
+# Mount routers
 app.include_router(auth_router)
 app.include_router(ip_assets_router)
 app.include_router(marketplace_router)
-app.include_router(licenses_router)
-app.include_router(payments_router)
 
 
 @app.get("/")
