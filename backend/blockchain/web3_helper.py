@@ -15,9 +15,10 @@ RPC_URL = os.getenv("RPC_URL", "http://127.0.0.1:8545")
 CONTRACT_ADDRESS = os.getenv("CONTRACT_ADDRESS", "0x0000000000000000000000000000000000000000")
 CHAIN_ID = int(os.getenv("CHAIN_ID", "1337"))
 
-# ── Minimal IP-Chain contract ABI ───────────────────────────────────────────
-# This ABI covers the essential functions for minting, listing, and buying IP NFTs.
-# Deploy your own contract with these function signatures and update the address.
+# ── Minimal IP-Chain contract ABI ──────────────────────────────────────────────
+# This ABI covers the essential functions for minting, listing, buying, and
+# verifying IP NFTs. Deploy your own contract with these function signatures
+# and update the address.
 CONTRACT_ABI = [
     {
         "inputs": [
@@ -48,6 +49,17 @@ CONTRACT_ABI = [
         "inputs": [],
         "name": "totalSupply",
         "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function",
+    },
+    {
+        "inputs": [{"internalType": "string", "name": "contentHash", "type": "string"}],
+        "name": "verifyContent",
+        "outputs": [
+            {"internalType": "bool", "name": "exists", "type": "bool"},
+            {"internalType": "uint256", "name": "tokenId", "type": "uint256"},
+            {"internalType": "address", "name": "owner", "type": "address"},
+        ],
         "stateMutability": "view",
         "type": "function",
     },
@@ -90,6 +102,27 @@ def recover_signer(message: str, signature: str) -> Optional[str]:
         return Web3.to_checksum_address(address)
     except Exception as exc:
         logger.error("Signature recovery failed: %s", exc)
+        return None
+
+
+def verify_content(content_hash: str) -> Optional[dict]:
+    """
+    Call the smart contract's verifyContent function to check whether a
+    content hash is registered on-chain.
+
+    Returns a dict with keys ``exists`` (bool), ``token_id`` (int),
+    ``owner`` (address str) if the contract is reachable, or None on failure.
+    """
+    try:
+        contract = get_contract()
+        exists, token_id, owner = contract.functions.verifyContent(content_hash).call()
+        return {
+            "exists": exists,
+            "token_id": token_id,
+            "owner": owner,
+        }
+    except Exception as exc:
+        logger.error("verifyContent call failed for hash %s: %s", content_hash, exc)
         return None
 
 

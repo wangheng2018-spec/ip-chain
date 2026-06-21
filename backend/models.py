@@ -1,10 +1,16 @@
 import datetime
+import enum
 from sqlalchemy import (
     Column, Integer, String, Text, Boolean, BigInteger,
     DateTime, ForeignKey, Float,
 )
 from sqlalchemy.orm import relationship
 from database import Base
+
+
+class TransactionType(str, enum.Enum):
+    buy = "buy"
+    license = "license"
 
 
 class User(Base):
@@ -93,6 +99,9 @@ class Transaction(Base):
     buyer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     price_wei = Column(String(78), nullable=False)
     tx_hash = Column(String(66), nullable=False, unique=True)
+    tx_type = Column(String(20), nullable=True, default=TransactionType.buy.value)
+    fiat_amount = Column(Float, nullable=True)
+    fiat_currency = Column(String(10), nullable=True)
     timestamp = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
 
     seller = relationship("User", foreign_keys=[seller_id], back_populates="sales", lazy="selectin")
@@ -106,7 +115,39 @@ class Transaction(Base):
             "buyer_id": self.buyer_id,
             "price_wei": self.price_wei,
             "tx_hash": self.tx_hash,
+            "tx_type": self.tx_type,
+            "fiat_amount": self.fiat_amount,
+            "fiat_currency": self.fiat_currency,
             "timestamp": self.timestamp.isoformat(),
             "seller": self.seller.to_dict() if self.seller else None,
             "buyer": self.buyer.to_dict() if self.buyer else None,
+        }
+
+
+class License(Base):
+    __tablename__ = "licenses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    token_id = Column(Integer, ForeignKey("ip_assets.token_id"), nullable=False, index=True)
+    licensee_address = Column(String(42), nullable=False)
+    license_type = Column(String(50), nullable=False)
+    expires_at = Column(DateTime, nullable=True)
+    max_uses = Column(Integer, nullable=True)
+    used_count = Column(Integer, default=0, nullable=False)
+    price_wei = Column(String(78), nullable=True)
+    active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "token_id": self.token_id,
+            "licensee_address": self.licensee_address,
+            "license_type": self.license_type,
+            "expires_at": self.expires_at.isoformat() if self.expires_at else None,
+            "max_uses": self.max_uses,
+            "used_count": self.used_count,
+            "price_wei": self.price_wei,
+            "active": self.active,
+            "created_at": self.created_at.isoformat(),
         }

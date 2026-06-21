@@ -50,6 +50,7 @@ const App = (() => {
   function initPageScripts(page) {
     if (page === 'dashboard') initDashboard();
     else if (page === 'marketplace') initMarketplace();
+    else if (page === 'verify') initVerifyPage();
     else if (page === 'upload') initUploadPage();
   }
 
@@ -382,6 +383,22 @@ const App = (() => {
 
   // Init
   function init() {
+    
+  async function initVerifyPage() {
+    const params = new URLSearchParams(window.location.hash.split("?")[1] || "");
+    const hash = params.get("hash");
+    if (hash) {
+      const input = document.getElementById("hash-input");
+      if (input) {
+        input.value = hash;
+        setTimeout(() => {
+          const btn = document.querySelector(".verify-card .btn-primary");
+          if (btn) btn.click();
+        }, 500);
+      }
+    }
+  }
+
     window.addEventListener('scroll', () => {
       const n = $('.navbar');
       if (n) n.classList.toggle('scrolled', window.scrollY > 50);
@@ -397,6 +414,22 @@ const App = (() => {
       });
       window.ethereum.on('chainChanged', () => window.location.reload());
     }
+    
+  async function initVerifyPage() {
+    const params = new URLSearchParams(window.location.hash.split("?")[1] || "");
+    const hash = params.get("hash");
+    if (hash) {
+      const input = document.getElementById("hash-input");
+      if (input) {
+        input.value = hash;
+        setTimeout(() => {
+          const btn = document.querySelector(".verify-card .btn-primary");
+          if (btn) btn.click();
+        }, 500);
+      }
+    }
+  }
+
     window.addEventListener('hashchange', () => { state.page = getPageFromHash(); loadPage(state.page); });
     state.page = getPageFromHash();
     loadPage(state.page);

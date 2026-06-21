@@ -9,7 +9,7 @@ import shutil
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -17,6 +17,7 @@ from database import get_db
 from models import IPAsset, User
 from routes.auth import get_current_user
 from blockchain.ipfs import upload_file_to_ipfs, upload_json_to_ipfs, get_ipfs_url
+from blockchain.web3_helper import verify_content as bc_verify_content
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +26,10 @@ router = APIRouter(prefix="/api/ip", tags=["ip-assets"])
 UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "./uploads"))
 MAX_UPLOAD_SIZE_MB = int(os.getenv("MAX_UPLOAD_SIZE_MB", "50"))
 MAX_UPLOAD_BYTES = MAX_UPLOAD_SIZE_MB * 1024 * 1024
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 
-# ── Schemas ──────────────────────────────────────────────────────────────────
+# ── Schemas ────────────────────────────────────────────────────────────────────
 
 class IPAssetResponse(BaseModel):
     ip_asset: dict
@@ -47,7 +49,17 @@ class MintResponse(BaseModel):
     ip_asset: dict
 
 
-# ── Upload helpers ───────────────────────────────────────────────────────────
+class VerifyResponse(BaseModel):
+    registered: bool
+    details: Optional[dict] = None
+
+
+class ShareResponse(BaseModel):
+    platform_urls: dict[str, str]
+    metadata: dict
+
+
+# ── Upload helpers ─────────────────────────────────────────────────────────────
 
 def _ensure_upload_dir():
     """Create the upload directory and category subdirectories if they do not exist."""
@@ -63,7 +75,63 @@ def _compute_sha256(file_path: Path) -> str:
     return h.hexdigest()
 
 
-# ── Routes ───────────────────────────────────────────────────────────────────
+# ── Routes ─────────────────────────────────────────────────────────────────────
+
+@router.get("/verify", response_model=VerifyResponse)
+def verify_ip_asset(
+    hash: str = Query(..., description="SHA-256 hash of the content to verify"),
+    db: Session = Depends(get_db),
+):
+    """
+    Verify whether content with the given SHA-256 hash is registered on the
+    blockchain. Checks both the local database and the smart contract.
+    """
+    if len(hash) != 64:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid SHA-256 hash — must be 64 hex characters",
+        )
+
+    # Check the local database first
+    asset = db.query(IPAsset).filter(IPAsset.content_hash == hash).first()
+
+    # Check the blockchain via the smart contract
+    chain_result = bc_verify_content(hash)
+
+    if chain_result and chain_result.get("exists"):
+        return VerifyResponse(
+            registered=True,
+            details={
+                "source": "blockchain",
+                "token_id": chain_result["token_id"],
+                "owner": chain_result["owner"],
+                "blockchain_tx_hash": asset.blockchain_tx_hash if asset else None,
+                "title": asset.title if asset else None,
+                "created_at": asset.created_at.isoformat() if asset else None,
+            },
+        )
+
+    if asset and asset.blockchain_tx_hash:
+        return VerifyResponse(
+            registered=True,
+            details={
+                "source": "database",
+                "token_id": asset.token_id,
+                "content_hash": asset.content_hash,
+                "title": asset.title,
+                "created_at": asset.created_at.isoformat(),
+            },
+        )
+
+    return VerifyResponse(
+        registered=False,
+        details={
+            "message": "Content hash not found on blockchain or in local records",
+            "db_found": asset is not None,
+            "chain_found": chain_result.get("exists", False) if chain_result else False,
+        },
+    )
+
 
 @router.post("/upload", response_model=IPAssetResponse, status_code=status.HTTP_201_CREATED)
 async def upload_ip_asset(
@@ -138,6 +206,39 @@ def get_ip_asset(asset_id: int, db: Session = Depends(get_db)):
     return IPAssetResponse(ip_asset=asset.to_dict())
 
 
+@router.get("/{asset_id}/share", response_model=ShareResponse)
+def share_ip_asset(asset_id: int, db: Session = Depends(get_db)):
+    """
+    Return share URLs and metadata for social platforms (Twitter/X, Telegram, etc.).
+    """
+    asset = db.query(IPAsset).filter(IPAsset.id == asset_id).first()
+    if not asset:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="IP asset not found")
+
+    asset_url = f"{FRONTEND_URL}/asset/{asset.id}"
+    share_text = f"Check out this IP asset on IP-Chain: {asset.title}"
+
+    return ShareResponse(
+        platform_urls={
+            "twitter": f"https://twitter.com/intent/tweet?text={_url_encode(share_text)}&url={_url_encode(asset_url)}",
+            "telegram": f"https://t.me/share/url?url={_url_encode(asset_url)}&text={_url_encode(share_text)}",
+            "facebook": f"https://www.facebook.com/sharer/sharer.php?u={_url_encode(asset_url)}",
+            "linkedin": f"https://www.linkedin.com/sharing/share-offsite/?url={_url_encode(asset_url)}",
+            "reddit": f"https://reddit.com/submit?url={_url_encode(asset_url)}&title={_url_encode(share_text)}",
+            "copy_link": asset_url,
+        },
+        metadata={
+            "title": asset.title,
+            "description": asset.description or "",
+            "content_hash": asset.content_hash,
+            "token_id": asset.token_id,
+            "url": asset_url,
+            "thumbnail_url": asset.thumbnail_url,
+            "creator": asset.creator.to_dict() if asset.creator else None,
+        },
+    )
+
+
 @router.get("/my", response_model=IPAssetListResponse)
 def get_my_ip_assets(
     current_user: User = Depends(get_current_user),
@@ -186,3 +287,11 @@ def record_mint(
 
     logger.info("IP asset minted: id=%d token_id=%d", asset.id, asset.token_id)
     return MintResponse(ip_asset=asset.to_dict())
+
+
+# ── Helpers ────────────────────────────────────────────────────────────────────
+
+def _url_encode(text: str) -> str:
+    """Percent-encode a string for use in a URL query parameter."""
+    import urllib.parse
+    return urllib.parse.quote(text, safe="")

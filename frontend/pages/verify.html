@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify IP - IP-Chain</title>
+  <meta name="description" content="Verify if your creative work is registered on the blockchain">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="../index.html" class="navbar-brand">
+        <div class="logo-icon">IP</div>
+        <span>IP-Chain</span>
+      </a>
+      <div class="nav-toggle" onclick="toggleNav()">☰</div>
+      <div class="nav-links">
+        <a href="../index.html">Home</a>
+        <a href="marketplace.html">Marketplace</a>
+        <a href="verify.html" class="active">Verify</a>
+        <a href="dashboard.html">Dashboard</a>
+        <button class="btn btn-primary btn-sm" id="nav-connect-btn" onclick="connectWallet()">Connect Wallet</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="verify-page">
+    <div class="container">
+      <div class="verify-header">
+        <h1>Verify Intellectual Property</h1>
+        <p>Check if a creative work is registered and protected on the IP-Chain blockchain.</p>
+      </div>
+
+      <div class="verify-methods">
+        <div class="verify-card">
+          <h3>By SHA-256 Hash</h3>
+          <p>Paste the SHA-256 hash of your file to verify its registration status.</p>
+          <div class="input-group">
+            <input type="text" id="hash-input" placeholder="Paste SHA-256 hash here..." class="form-input mono">
+            <button class="btn btn-primary" onclick="verifyByHash()">Verify</button>
+          </div>
+        </div>
+
+        <div class="divider"><span>OR</span></div>
+
+        <div class="verify-card">
+          <h3>By File Upload</h3>
+          <p>Upload a file and we will calculate its SHA-256 hash and verify it.</p>
+          <div class="file-drop-zone" id="file-drop-zone" ondragover="event.preventDefault()" ondrop="handleFileDrop(event)">
+            <div class="drop-content">
+              <span class="drop-icon">📄</span>
+              <p>Drag & drop your file here, or <a href="#" onclick="document.getElementById('file-input').click(); return false;">browse</a></p>
+              <input type="file" id="file-input" onchange="handleFileSelect(event)" style="display:none">
+            </div>
+          </div>
+          <div id="file-hash-display" style="display:none" class="hash-result">
+            <label>File SHA-256 Hash:</label>
+            <code id="computed-hash"></code>
+            <button class="btn btn-primary btn-sm" onclick="verifyByHash()">Verify This Hash</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="verify-result" class="verify-result" style="display:none">
+        <div class="result-header" id="result-header">
+          <span class="result-icon">✅</span>
+          <h2>Registered on Blockchain</h2>
+        </div>
+        <div id="result-details" class="result-details">
+          <div class="detail-row"><span>Token ID</span><strong id="r-token-id">-</strong></div>
+          <div class="detail-row"><span>Creator</span><strong id="r-creator" class="mono">-</strong></div>
+          <div class="detail-row"><span>Registration Time</span><strong id="r-timestamp">-</strong></div>
+          <div class="detail-row"><span>Blockchain</span><strong>Polygon Network</strong></div>
+        </div>
+        <div id="result-not-found" style="display:none" class="not-found">
+          <span class="result-icon">❌</span>
+          <h2>Not Found on Blockchain</h2>
+          <p>This content hash has not been registered on IP-Chain. Consider registering it to protect your work.</p>
+          <a href="upload.html" class="btn btn-primary">Register Now</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 IP-Chain. Decentralized Intellectual Property Protection.</p>
+    </div>
+  </footer>
+
+  <script src="../js/api.js"></script>
+  <script>
+    function toggleNav() { document.querySelector('.nav-links').classList.toggle('show'); }
+
+    let currentHash = "";
+
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) computeHash(file);
+    }
+
+    function handleFileDrop(event) {
+      event.preventDefault();
+      const file = event.dataTransfer.files[0];
+      if (file) computeHash(file);
+    }
+
+    function computeHash(file) {
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const buffer = e.target.result;
+        const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        currentHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        document.getElementById('file-hash-display').style.display = 'block';
+        document.getElementById('computed-hash').textContent = currentHash;
+        document.getElementById('hash-input').value = currentHash;
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    async function verifyByHash() {
+      const hash = document.getElementById('hash-input').value.trim();
+      if (!hash || hash.length !== 64) {
+        alert('Please enter a valid SHA-256 hash (64 hex characters)');
+        return;
+      }
+      currentHash = hash;
+
+      const resultDiv = document.getElementById('verify-result');
+      const foundDiv = document.getElementById('result-header');
+      const notFoundDiv = document.getElementById('result-not-found');
+      resultDiv.style.display = 'block';
+
+      try {
+        const response = await fetch(API_BASE + '/api/ip/verify?hash=' + encodeURIComponent(hash));
+        const data = await response.json();
+
+        if (data.registered) {
+          foundDiv.style.display = 'block';
+          notFoundDiv.style.display = 'none';
+          document.getElementById('r-token-id').textContent = '#' + data.token_id;
+          document.getElementById('r-creator').textContent = data.creator;
+          document.getElementById('r-timestamp').textContent = new Date(data.timestamp * 1000).toLocaleString();
+          document.getElementById('result-header').querySelector('.result-icon').textContent = '✅';
+          document.getElementById('result-header').querySelector('h2').textContent = 'Registered on Blockchain';
+        } else {
+          foundDiv.style.display = 'none';
+          notFoundDiv.style.display = 'block';
+        }
+      } catch (err) {
+        foundDiv.style.display = 'block';
+        notFoundDiv.style.display = 'none';
+        document.getElementById('result-header').querySelector('.result-icon').textContent = '⚠️';
+        document.getElementById('result-header').querySelector('h2').textContent = 'Verification Error';
+        document.getElementById('r-token-id').textContent = 'API Error';
+        document.getElementById('r-creator').textContent = err.message;
+        document.getElementById('r-timestamp').textContent = '-';
+      }
+    }
+
+    async function connectWallet() {
+      if (typeof window.ethereum !== 'undefined') {
+        try {
+          await window.ethereum.request({ method: 'eth_requestAccounts' });
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const signer = provider.getSigner();
+          const address = await signer.getAddress();
+          const btn = document.getElementById('nav-connect-btn');
+          btn.textContent = address.slice(0,6) + '...' + address.slice(-4);
+          btn.classList.add('connected');
+        } catch(e) {
+          console.error(e);
+        }
+      } else {
+        alert('Please install MetaMask to connect your wallet.');
+      }
+    }
+
+    // Auto-verify if hash in URL params
+    const params = new URLSearchParams(window.location.search);
+    const hashParam = params.get('hash');
+    if (hashParam) {
+      document.getElementById('hash-input').value = hashParam;
+      verifyByHash();
+    }
+  </script>
+</body>
+</html>

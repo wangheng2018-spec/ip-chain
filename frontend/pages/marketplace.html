@@ -44,6 +44,81 @@
   </section>
   <script>
     // Marketplace init handled by app.js
-  </script>
+  
+  let shareTokenId = null;
+  function openShareModal(tokenId) { shareTokenId = tokenId; document.getElementById("share-modal").classList.add("show"); }
+  function closeShareModal() { document.getElementById("share-modal").classList.remove("show"); }
+  function shareOnTwitter() {
+    var url = window.location.origin + "/pages/verify.html";
+    window.open("https://twitter.com/intent/tweet?text=IP-Chain+Verified+Asset&url=" + encodeURIComponent(url), "_blank");
+    closeShareModal();
+  }
+  function shareOnTelegram() {
+    var url = window.location.origin + "/pages/verify.html";
+    window.open("https://t.me/share/url?url=" + encodeURIComponent(url) + "&text=IP-Chain+Verified+Asset", "_blank");
+    closeShareModal();
+  }
+  function copyShareLink() {
+    var url = window.location.origin + "/pages/verify.html";
+    navigator.clipboard.writeText(url).then(function() { alert("Link copied!"); });
+    closeShareModal();
+  }
+  var paymentTokenId = null;
+  function openPaymentModal(tokenId, price) {
+    paymentTokenId = tokenId;
+    document.getElementById("payment-asset-info").textContent = "Token #" + tokenId + " | Price: " + price + " ETH";
+    document.getElementById("payment-modal").classList.add("show");
+  }
+  function closePaymentModal() { document.getElementById("payment-modal").classList.remove("show"); }
+  function payWithCrypto() {
+    closePaymentModal();
+    if (typeof buyIP === "function") buyIP(paymentTokenId);
+    else alert("Please connect your wallet first");
+  }
+  function payWithCard() {
+    closePaymentModal();
+    fetch("/api/payments/create-checkout", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({token_id: paymentTokenId})
+    }).then(function(r) { return r.json(); }).then(function(data) {
+      if (data.url) window.location.href = data.url;
+      else alert("Payment error");
+    }).catch(function() { alert("Payment service unavailable. Try crypto instead."); });
+  }
+
+</script>
+  <!-- Share Modal -->
+  <div class="share-modal" id="share-modal">
+    <div class="share-modal-content">
+      <h3>Share This IP</h3>
+      <div class="share-options">
+        <button class="share-btn" onclick="shareOnTwitter()"><span class="icon">X</span> Twitter / X</button>
+        <button class="share-btn" onclick="shareOnTelegram()"><span class="icon">T</span> Telegram</button>
+        <button class="share-btn" onclick="copyShareLink()"><span class="icon">L</span> Copy Link</button>
+      </div>
+      <button class="btn btn-outline modal-close" onclick="closeShareModal()">Close</button>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div class="payment-modal" id="payment-modal">
+    <div class="share-modal-content">
+      <h3>Purchase IP Asset</h3>
+      <p id="payment-asset-info" style="color:var(--muted);margin-bottom:16px"></p>
+      <div class="payment-options">
+        <div class="payment-option" onclick="payWithCrypto()">
+          <span class="icon">C</span>
+          <div class="info"><strong>Pay with Crypto</strong><span>MetaMask / WalletConnect</span></div>
+        </div>
+        <div class="payment-option" onclick="payWithCard()">
+          <span class="icon">D</span>
+          <div class="info"><strong>Pay with Card</strong><span>Credit / Debit Card (Stripe)</span></div>
+        </div>
+      </div>
+      <button class="btn btn-outline modal-close" onclick="closePaymentModal()">Cancel</button>
+    </div>
+  </div>
+
 </body>
 </html>
