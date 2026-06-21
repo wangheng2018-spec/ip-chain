@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload IP - IP-Chain</title>
+</head>
+<body>
+  <section class="page-header">
+    <div class="container">
+      <h1>Upload New IP</h1>
+      <p>Register your creative work on the blockchain. Your file is hashed and stored on IPFS.</p>
+    </div>
+  </section>
+
+  <section class="upload-layout">
+    <div class="container" style="max-width:var(--container-max);margin:0 auto;padding:0 24px;width:100%;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
+        <div class="upload-form-section">
+          <!-- Drop Zone -->
+          <div class="form-group">
+            <label class="form-label">Upload File</label>
+            <div class="drop-zone">
+              <div class="drop-icon">📁</div>
+              <p>Drag & drop your file here, or click to browse</p>
+              <span class="drop-hint">Supports images, audio, documents, and code files</span>
+              <img id="file-preview" class="file-preview" style="display:none;" alt="Preview" />
+            </div>
+            <input type="file" id="file-input" style="display:none;" />
+          </div>
+
+          <!-- Title -->
+          <div class="form-group">
+            <label class="form-label" for="ip-title">Title</label>
+            <input type="text" id="ip-title" class="form-input" placeholder="Enter a title for your IP" />
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label class="form-label" for="ip-desc">Description</label>
+            <textarea id="ip-desc" class="form-textarea" placeholder="Describe your creative work..."></textarea>
+          </div>
+
+          <!-- Category -->
+          <div class="form-group">
+            <label class="form-label" for="ip-category">Category</label>
+            <select id="ip-category" class="form-select">
+              <option value="art">🎨 Art</option>
+              <option value="music">🎵 Music</option>
+              <option value="code">💻 Code</option>
+              <option value="writing">📖 Writing</option>
+              <option value="knowledge">📚 Knowledge</option>
+            </select>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display:flex;gap:16px;margin-top:24px;">
+            <button id="upload-btn" class="btn btn-primary" style="flex:1;">Upload to IPFS</button>
+            <button id="mint-btn" class="btn btn-accent" style="flex:1;" disabled>Mint NFT</button>
+          </div>
+
+          <!-- Progress -->
+          <div style="margin-top:24px;">
+            <div class="progress-bar">
+              <div class="progress-fill"></div>
+            </div>
+            <div class="progress-text">Ready to upload</div>
+          </div>
+        </div>
+
+        <div class="upload-preview-section">
+          <h3 style="margin-bottom:20px;font-size:1.1rem;">IP Details Preview</h3>
+          <div style="margin-bottom:16px;">
+            <label class="form-label">SHA-256 Hash</label>
+            <div class="hash-display">
+              <span class="hash-value" id="hash-display">Waiting for file...</span>
+              <span class="copy-btn" title="Copy hash">📋</span>
+            </div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <label class="form-label">File Size</label>
+            <p style="color:var(--text-secondary);font-size:.9rem;" id="file-size-display">No file selected</p>
+          </div>
+          <div style="margin-bottom:16px;">
+            <label class="form-label">File Type</label>
+            <p style="color:var(--text-secondary);font-size:.9rem;" id="file-type-display">-</p>
+          </div>
+          <div style="padding:16px;background:var(--bg-glass-light);border-radius:var(--radius-sm);border:1px solid var(--border);margin-top:24px;">
+            <p style="font-size:.8rem;color:var(--text-muted);line-height:1.6;">
+              <strong style="color:var(--text-secondary);">ℹ️ How it works:</strong><br />
+              1. Upload your file to IPFS for decentralized storage.<br />
+              2. A SHA-256 hash is generated to fingerprint your work.<br />
+              3. Mint an NFT on the blockchain to establish ownership.<br />
+              4. List your IP on the marketplace to sell or license.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Upload page init handled by app.js
+    // Set file size and type on file selection
+    document.addEventListener('DOMContentLoaded', function() {
+      const fi = document.getElementById('file-input');
+      const fsd = document.getElementById('file-size-display');
+      const ftd = document.getElementById('file-type-display');
+      if (fi) {
+        fi.addEventListener('change', function() {
+          if (this.files.length) {
+            const f = this.files[0];
+            if (fsd) fsd.textContent = (f.size / 1024).toFixed(1) + ' KB' + (f.size > 1048576 ? ' (' + (f.size / 1048576).toFixed(2) + ' MB)' : '');
+            if (ftd) ftd.textContent = f.type || 'Unknown';
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

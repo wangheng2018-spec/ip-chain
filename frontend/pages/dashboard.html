@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - IP-Chain</title>
+</head>
+<body>
+  <section class="page-header">
+    <div class="container">
+      <h1>Dashboard</h1>
+      <p>Manage your IP assets and track your portfolio.</p>
+    </div>
+  </section>
+
+  <section class="dashboard-layout">
+    <div class="container">
+      <!-- Wallet Bar -->
+      <div class="dashboard-wallet-bar">
+        <div class="wallet-info">
+          <div class="wallet-label">Connected Wallet</div>
+          <div class="wallet-addr" id="wallet-address">Not connected</div>
+        </div>
+        <button class="wallet-btn"><span class="wallet-dot"></span>Connect Wallet</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid mb-4">
+        <div class="stat-card">
+          <div class="stat-card-icon purple">📊</div>
+          <div class="stat-card-value" id="stat-value">0 ETH</div>
+          <div class="stat-card-label">Portfolio Value</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon green">📦</div>
+          <div class="stat-card-value" id="stat-assets">0</div>
+          <div class="stat-card-label">IP Assets</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon blue">💱</div>
+          <div class="stat-card-value" id="stat-sold">0</div>
+          <div class="stat-card-label">Sold</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon orange">⛓️</div>
+          <div class="stat-card-value">ETH</div>
+          <div class="stat-card-label">Network</div>
+        </div>
+      </div>
+
+      <!-- My IP Assets -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h3>My IP Assets</h3>
+          <button class="btn btn-primary btn-sm" onclick="App.navigateTo('upload')">+ Upload New IP</button>
+        </div>
+        <div class="card-body">
+          <div class="ip-grid"></div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Recent Transactions</h3>
+        </div>
+        <div class="card-body">
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Transaction</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="txn-table-body">
+                <tr>
+                  <td colspan="4" style="text-align:center;color:var(--text-muted)">Loading transactions...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <script>
+    // Dashboard specific init is handled by app.js
+  </script>
+</body>
+</html>

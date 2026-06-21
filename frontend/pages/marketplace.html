@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketplace - IP-Chain</title>
+</head>
+<body>
+  <section class="page-header">
+    <div class="container">
+      <h1>Marketplace</h1>
+      <p>Discover and trade unique IP assets from creators worldwide.</p>
+    </div>
+  </section>
+
+  <section style="padding: 32px 0 80px;">
+    <div class="container">
+      <!-- Search & Sort -->
+      <div class="search-sort-bar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search by title or creator..." />
+        </div>
+        <select class="sort-select">
+          <option value="newest">Newest First</option>
+          <option value="price-low">Price: Low to High</option>
+          <option value="price-high">Price: High to Low</option>
+        </select>
+      </div>
+
+      <!-- Category Filters -->
+      <div class="filter-bar">
+        <button class="filter-btn active" data-cat="all">All</button>
+        <button class="filter-btn cat-art" data-cat="art">🎨 Art</button>
+        <button class="filter-btn cat-music" data-cat="music">🎵 Music</button>
+        <button class="filter-btn cat-code" data-cat="code">💻 Code</button>
+        <button class="filter-btn cat-writing" data-cat="writing">📖 Writing</button>
+        <button class="filter-btn cat-knowledge" data-cat="knowledge">📚 Knowledge</button>
+      </div>
+
+      <!-- IP Grid -->
+      <div class="ip-grid"></div>
+    </div>
+  </section>
+  <script>
+    // Marketplace init handled by app.js
+  </script>
+</body>
+</html>

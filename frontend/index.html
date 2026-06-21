@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IP-Chain - Protect Your Ideas on the Blockchain</title>
+  <meta name="description" content="Blockchain-based intellectual property protection and trading platform. Upload, mint as NFT, and trade your creative works.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="#" class="navbar-brand">
+        <div class="logo-icon">IP</div>
+        <span>IP-Chain</span>
+      </a>
+      <div class="navbar-links">
+        <a href="#home" class="active">Home</a>
+        <a href="#dashboard">Dashboard</a>
+        <a href="#marketplace">Marketplace</a>
+        <a href="#upload">Upload</a>
+      </div>
+      <div class="navbar-actions">
+        <button class="wallet-btn"><span class="wallet-dot"></span>Connect Wallet</button>
+        <button class="mobile-menu-btn">☰</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu">
+    <a href="#home" class="active">Home</a>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#marketplace">Marketplace</a>
+    <a href="#upload">Upload</a>
+  </div>
+
+  <!-- Main Content -->
+  <div id="app">
+    <!-- Home Page -->
+    <section id="home-page">
+      <section class="hero">
+        <div class="hero-bg">
+          <div class="gradient-orb"></div>
+          <div class="gradient-orb"></div>
+          <div class="gradient-orb"></div>
+          <div class="grid-overlay"></div>
+        </div>
+        <div class="hero-content">
+          <div class="hero-badge">
+            <span class="badge-dot"></span>
+            Powered by Blockchain Technology
+          </div>
+          <h1>Protect Your Ideas<br>on the <span class="text-gradient">Blockchain</span></h1>
+          <p>Upload your creative work, mint as NFTs, and trade with confidence. IP-Chain provides immutable proof of ownership and a decentralized marketplace for intellectual property.</p>
+          <div class="hero-actions">
+            <button class="btn btn-primary btn-lg" onclick="App.navigateTo('upload')">Get Started</button>
+            <button class="btn btn-outline btn-lg" onclick="App.navigateTo('marketplace')">Explore Market</button>
+          </div>
+          <div class="stats-bar">
+            <div class="stat-item">
+              <div class="stat-value">12,458+</div>
+              <div class="stat-label">IPs Registered</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">4,892</div>
+              <div class="stat-label">Active Traders</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">$2.4M</div>
+              <div class="stat-label">Total Volume</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section class="section">
+        <div class="container">
+          <div class="section-header">
+            <h2>Why <span class="text-gradient">IP-Chain</span>?</h2>
+            <p>Three powerful features that make IP protection effortless and secure.</p>
+          </div>
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="feature-icon">📝</div>
+              <h3>IP Registration</h3>
+              <p>Register your creative work on the blockchain with a tamper-proof timestamp and cryptographic proof of ownership. Each submission generates a unique SHA-256 hash.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🔒</div>
+              <h3>Blockchain Protection</h3>
+              <p>Your intellectual property is secured by Ethereum smart contracts. Immutable records ensure your ownership can never be disputed or altered by any party.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🏪</div>
+              <h3>Decentralized Marketplace</h3>
+              <p>Buy and sell IP assets directly on our peer-to-peer marketplace. Smart contracts handle escrow, royalty distribution, and transfer of ownership automatically.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- How It Works -->
+      <section class="section" style="background:var(--bg-secondary)">
+        <div class="container">
+          <div class="section-header">
+            <h2>How It <span class="text-gradient">Works</span></h2>
+            <p>Three simple steps to protect and trade your intellectual property.</p>
+          </div>
+          <div class="steps-grid">
+            <div class="step-card">
+              <div class="step-number">1</div>
+              <h3>Upload Your Work</h3>
+              <p>Drag and drop your creative file. A unique SHA-256 hash is generated instantly to fingerprint your work.</p>
+            </div>
+            <div class="step-card">
+              <div class="step-number">2</div>
+              <h3>Mint as NFT</h3>
+              <p>Connect your wallet and mint your IP as a non-fungible token. The blockchain records your ownership permanently.</p>
+            </div>
+            <div class="step-card">
+              <div class="step-number">3</div>
+              <h3>Trade & Earn</h3>
+              <p>List your IP for sale on the marketplace or discover unique assets from creators worldwide.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <div class="container">
+          <div class="footer-grid">
+            <div class="footer-brand">
+              <a href="#" class="navbar-brand">
+                <div class="logo-icon">IP</div>
+                <span>IP-Chain</span>
+              </a>
+              <p>Decentralized intellectual property protection and trading platform powered by blockchain technology.</p>
+            </div>
+            <div class="footer-col">
+              <h4>Platform</h4>
+              <a href="#dashboard">Dashboard</a>
+              <a href="#marketplace">Marketplace</a>
+              <a href="#upload">Upload IP</a>
+            </div>
+            <div class="footer-col">
+              <h4>Resources</h4>
+              <a href="#">Documentation</a>
+              <a href="#">API Reference</a>
+              <a href="#">FAQ</a>
+            </div>
+            <div class="footer-col">
+              <h4>Company</h4>
+              <a href="#">About</a>
+              <a href="#">Terms of Service</a>
+              <a href="#">Privacy Policy</a>
+            </div>
+          </div>
+          <div class="footer-bottom">
+            <span>&copy; 2026 IP-Chain. All rights reserved.</span>
+            <div class="footer-social">
+              <a href="#" title="Twitter">𝕏</a>
+              <a href="#" title="Discord">💬</a>
+              <a href="#" title="GitHub">⌘</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </section>
+  </div>
+
+  <!-- Page content area for SPA routing -->
+  <div id="page-content"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/blockchain.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
